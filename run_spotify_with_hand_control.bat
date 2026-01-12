@@ -1,13 +1,13 @@
 @echo off
 
-rem === מפעיל את ספוטיפיי ===
+rem === activate spotify ===
 start  spotify
 
-rem מחכים כמה שניות שיסתדר
+rem == waiting few seconds to spotify work succesfuly ==
 timeout /t 5 /nobreak >nul
 
-rem === עוברים לתיקיית הפרויקט ===
+rem === moving to project files ===
 cd /d "C:\מסמכים שלי\ראיונות עבודה\projects\Spotify Hand Controller"
 
-rem === מפעילים את הסקריפט שלך ===
+rem === activate main ===
 py main.py
