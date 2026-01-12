@@ -6,10 +6,10 @@ import numpy as np
 from spotify_controller import SpotifyController
 
 
-# ==== פרמטרים שאפשר לכוונן =====================================
+# ==== Paramters =================================================
 
-COOLDOWN_SEC = 1.0      # זמן מינימלי בין פקודות Spotify
-HISTORY_LEN = 5        # כמה פריימים משתמשים לרוב קולות על האיזור
+COOLDOWN_SEC = 1.0      
+HISTORY_LEN = 5       
 SWIPE_THRESHOLD = 0.1
 Fist_threshold = 0.1
 
@@ -52,7 +52,6 @@ class HandRegionDetector:
             text = f"Spotify Hand Control"
             cv2.putText(frame_flipped, text, (20, 40),cv2.FONT_HERSHEY_SIMPLEX, 0.8,(255, 255, 255), 2)
 
-
         return frame_flipped, x_norm, spread_y 
 
     def close(self):
@@ -71,6 +70,7 @@ def main():
         last_action_text = ""
         last_x_values = deque(maxlen=HISTORY_LEN)
         last_spread_y = deque(maxlen=HISTORY_LEN)
+        last_timestamps = deque(maxlen=HISTORY_LEN)
 
         while True:
             ret, frame = cap.read()
@@ -79,46 +79,59 @@ def main():
             
             frame_vis, x_norm, spread_y  = detector.process_frame(frame)
 
-            # אם זוהתה יד – נעדכן היסטוריה
-            if x_norm is not None or spread_y is not None:
+            scale_percent = 0.95 
+            width = int(frame_vis.shape[1] * scale_percent)
+            height = int(frame_vis.shape[0] * scale_percent)
+            dim = (width, height)
+            frame_resized = cv2.resize(frame_vis, dim, interpolation=cv2.INTER_AREA)
+
+            # if hand detected change the last positions.
+            if x_norm is not None and spread_y is not None:
+                now = time.time()
                 last_x_values.append(x_norm)
                 last_spread_y.append(spread_y)
+                last_timestamps.append(now)
 
-                # צריך לפחות שני ערכים כדי לחשב תנועה
+                # we need to detect two positions to consider change
                 if len(last_x_values) >= 2:
                     dx = last_x_values[-1] - last_x_values[0]
                     dy = last_spread_y[0] - last_spread_y[-1]
-                    now = time.time()
+                    dt = last_timestamps[-1] - last_timestamps[0]
+                    vx = dx / dt if dt > 0 else 0 
+                    vy = dy / dt if dt > 0 else 0  
 
                     if now - last_action_time > COOLDOWN_SEC:
                         
                         if dx > SWIPE_THRESHOLD:
-                            sp.next_track()
-                            last_action_text = "Next track (left => right)"
+                            sp.next_track(dx=dx, vx=vx) 
+                            last_action_text = f"Next track (vx: {vx:.2f})"
                             last_action_time = now
                             last_x_values.clear()
+                            last_timestamps.clear()
 
                         elif dx < -SWIPE_THRESHOLD:
-                            sp.previous_track()
-                            last_action_text = "Previous track (right => left)"
+                            sp.previous_track(dx=dx, vx=vx)
+                            last_action_text = f"Prev track (vx: {vx:.2f})"
                             last_action_time = now
                             last_x_values.clear()
+                            last_timestamps.clear()
 
                         elif abs(dy) > Fist_threshold:
-                            sp.toggle_play()
-                            last_action_text = "Play/Pause"
+                            sp.toggle_play(dy=dy, vy=vy) 
+                            last_action_text = f"Play/Pause (vy: {vy:.2f})"
                             last_action_time = now
                             last_spread_y.clear()
- 
+                            last_timestamps.clear()
             else:
                 last_x_values.clear()
                 last_spread_y.clear()
+                last_timestamps.clear()
 
             # plot the last command
             if last_action_text:
-                cv2.putText(frame_vis, f"Last action: {last_action_text}",(20, 80),cv2.FONT_HERSHEY_SIMPLEX, 0.7,(0, 255, 255), 2)
+                cv2.putText(frame_resized, f"Last action: {last_action_text}",(20, 80),cv2.FONT_HERSHEY_SIMPLEX, 0.7,(0, 255, 255), 2)
 
-            cv2.imshow("Hand Spotify control (MediaPipe)", frame_vis)
+            cv2.imshow("Hand Spotify control (MediaPipe)", frame_resized)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break

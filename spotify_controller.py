@@ -1,10 +1,10 @@
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
-# ==== תמלא כאן את הפרטים שלך מה-Spotify Dashboard ====
-CLIENT_ID = "YOUR_SPOTIFY_CLIENT_ID_HERE"
-CLIENT_SECRET = "YOUR_SPOTIFY_CLIENT_SECRET_HERE"
-REDIRECT_URI = "http://localhost:8888/callback"  # or whatever you use
+# ==== Spotify Dashboard - Please enter here your spotify account ====
+CLIENT_ID = "ADD your spotify client ID here"
+CLIENT_SECRET = "ADD your spotify client secret here"
+REDIRECT_URI = "ADD REDIRECT"
 SCOPE = "user-modify-playback-state user-read-playback-state"
 
 
@@ -15,7 +15,7 @@ def create_spotify_client():
             client_secret=CLIENT_SECRET,
             redirect_uri=REDIRECT_URI,
             scope=SCOPE,
-            open_browser=True,  # יפתח אוטומטית דפדפן בפעם הראשונה
+            open_browser=True,  
         )
     )
     return sp
@@ -23,23 +23,26 @@ def create_spotify_client():
 
 class SpotifyController:
     def __init__(self):
-        self.sp = create_spotify_client()
+        self.sp = create_spotify_client() 
 
-    def next_track(self):
-        print("▶️  Next track")
+    def next_track(self, dx=None, vx=None):
+        print(f"▶️  Next track    | dx: {dx:+.3f} | vx: {vx:+.3f}")
         self.sp.next_track()
 
-    def previous_track(self):
-        print("⏮  Previous track")
+    def previous_track(self, dx=None, vx=None):
+        print(f"⏮  Previous track | dx: {dx:+.3f} | vx: {vx:+.3f}")
         self.sp.previous_track()
 
-    def toggle_play(self):
+    def toggle_play(self, dy=None, vy=None):
         playback = self.sp.current_playback()
-        if playback and playback.get("is_playing"):
-            print("⏸  Pause")
+        is_playing = playback.get("is_playing") if playback else False
+        action = "Pause" if is_playing else "Play"
+        
+        print(f"🔄 {action}        | dy: {dy:+.3f} | vy: {vy:+.3f}")
+        
+        if is_playing:
             self.sp.pause_playback()
         else:
-            print("▶️  Play")
             self.sp.start_playback()
 
 
