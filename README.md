@@ -27,7 +27,9 @@ Main files:
 
 ## Demo
 
-Demo GIF and video will be added here.
+See demo on linkedin:
+
+<img width="1841" height="891" alt="Screenshot 2026-01-12 142813" src="https://github.com/user-attachments/assets/02a718fa-1ec3-4964-9401-05e5a288688a" />
 
 ---
 
