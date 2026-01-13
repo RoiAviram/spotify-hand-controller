@@ -27,7 +27,7 @@ Main files:
 
 ## Demo
 
-See demo on linkedin:
+See demo on linkedin: https://www.linkedin.com/feed/update/urn:li:activity:7416737502742429696/
 
 <img width="1841" height="891" alt="Screenshot 2026-01-12 142813" src="https://github.com/user-attachments/assets/02a718fa-1ec3-4964-9401-05e5a288688a" />
 
